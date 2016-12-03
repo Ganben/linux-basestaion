@@ -128,6 +128,12 @@ def on_connect(client,userdata,flags,rc):
 	client.subscribe(CMDTITLE)
 	print("Connected with resut code " + str(rc))
 
+def on_disconnect(client, userdata, rc):      
+	while rc != 0:
+	 	sleep(RECONNECT_DELAY_SECS)
+		print "Reconnecting..."
+		rc = client.reconnect()
+
 def on_message(client,userdata,msg):
 	if msg.topic == CMD_TITLE:
 		commandQ.put(str(msg.payload))
@@ -171,12 +177,13 @@ def runcmd(threadName,q):
 		time.sleep(10.0)
 
 class MqttClient(threading.Thread):
-	def __init__(self,threadID,name,on_connect,on_message,server,port,alivetime,sleeptime):
+	def __init__(self,threadID,name,on_connect,on_message,on_disconnect,server,port,alivetime,sleeptime):
 		threading.Thread.__init__(self)
 		self.threadID = threadID
 		self.name = name
 		self.on_message = on_message
 		self.on_connect = on_connect
+		self.on_disconnect = on_disconnect
 		self.server = server
 		self.port = port
 		self.alivetime= alivetime 
@@ -202,8 +209,8 @@ braceletFlag= conf.get('BLE','bracetlet_flag')
 outbodyFlag = conf.get('BLE','outbody_manufacturer_flag')
 positionFlag= conf.get('BLE','position_manufacturer_flag')
 
-client = mqtt.Client(stationAlias)
-thread1 = MqttClient(1,'thread1',on_connect,on_message,MQTTServer,MQTTPort,mqttClientKeepAliveTime,mqttClientLoopSleepTime)
+client = mqtt.Client(client_id=stationAlias,clean_session=False)
+thread1 = MqttClient(1,'thread1',on_connect,on_message,on_disconnect,MQTTServer,MQTTPort,mqttClientKeepAliveTime,mqttClientLoopSleepTime)
 thread1.start()
 thread2 = MqttListener(2,'thread2',commandQ)
 thread2.start()
