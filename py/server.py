@@ -84,12 +84,26 @@ class MyTCPHandler(SocketServer.BaseRequestHandler):
             self.data = self.request.recv(1024).strip() 
             #self.data = self.request.recv(1024)  #unusual strip off the end chsum
             if not self.data: break
+
             arrs = []
             for e in self.data:
                 arrs.append('{:02x}'.format(struct.unpack('B', e[0])[0]))
             print('-'.join(arrs))
             #192.168.2.9  
             print self.data
+            try:
+                sss = struct.unpack("H B 6B 4B 6B BBB 6B B", self.data)
+                print sss
+            except: 
+                print('unpack error')
+            arrs = []
+            for e in self.data:
+                arrs.append('{:02x}'.format(struct.unpack('B', e[0])[0]))
+            print(':'.join(arrs))
+            #192.168.2.146:8090  
+            #print self.data
+            #sss = struct.Struct('<' + 'H c 3H 2H 3H 3c 3H c')
+
 
 if __name__ == "__main__":
     server = SocketServer.TCPServer((HOST, PORT), MyTCPHandler)

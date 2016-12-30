@@ -56,7 +56,15 @@ picUploadPort = conf.get('camera','upload_port')
 picUploadDir = conf.get('camera','tmp_dir')
 hottime = float(conf.get('camera','hottime'))
 def write_conf(node,key,value):
-	fh = open('t.cnf','w')
-	conf.set(node,key,value)
-	fh.close()
-	conf.write(fh)
+	try:
+		fh = open('t.cnf','w')
+		conf.set(node,key,value)
+		conf.write(fh)
+	except:
+		#log sth
+		return False
+	else:
+		return True
+	finally:
+		fh.close()
+		

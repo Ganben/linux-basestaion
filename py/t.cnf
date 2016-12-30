@@ -1,37 +1,33 @@
 [station]
-alias = pinky 
+alias = pinky
 version = 1.0
 
 [queue]
-position_l= 10000
-cmd_l= 100
+position_l = 10000
+cmd_l = 100
 call_l = 100
 
 [MQTT]
-#server = 192.168.1.199
-#server = 47.88.15.107
-server = 10.8.47.29
+server = 192.168.43.150
 port = 1883
 position_t = position
 cmd_t = ap
 common_t = common
 call_t = nursecall
-heartbeat_t = apstate 
+heartbeat_t = apstate
 
 [SOCKET]
-#host = 47.88.15.107
-#host = 192.168.1.106
 host = 10.8.47.5
-port = 50007 
+port = 50007
 
 [DATA]
-MODE= SJ
+mode = SJ
 
 [BLE]
-bracetlet_flag= 00ff
-position_manufacturer_flag= 13
-call_manufacturer_flag= 66
-outbody_manufacturer_flag= 68
+bracetlet_flag = 00ff
+position_manufacturer_flag = 13
+call_manufacturer_flag = 66
+outbody_manufacturer_flag = 68
 bracelet2_flag = 200000
 bracelet3_flag = 140000
 
@@ -47,10 +43,10 @@ thread_heartbeat_sleeptime = 5.0
 main_scanner_scantime = 1.0
 
 [camera]
-resolution_h =  1600
+resolution_h = 1600
 resolution_v = 1200
 hottime = 1.0
-#upload_host = 10.8.47.15
 upload_host = 10.8.47.29
 upload_port = 9090
 tmp_dir = jpeg
+
