@@ -4,6 +4,7 @@
 import uuid, time, socket, fcntl
 from protobuilder import outputbuilder
 from func import *
+from var import *
 from depconfig import *
 #for json type data use : inbetween
 #::predefined values::
@@ -22,8 +23,10 @@ def get_empty_datadict():
     #datadict={keyflag, bsmac, hexip, bcmac, rssi, battery, temp, reserve}
     datadict={}
     datadict['keyflag'] = KEY_HEARTBEAT
-    datadict['bsmac'] = get_mac_address()
-    ipname = '%s%s' % (depIfip, get_mac_address())
+    #datadict['bsmac'] = get_mac_address()
+    datadict['bsmac'] = get_mac_address(MacFilter)
+    #ipname = '%s%s' % (depIfip, get_mac_address())
+    ipname = '%s%s' % (depIfip, get_mac_address(MacFilter))
     datadict['ip'] = get_ip_address(ipname)
     
     local_ip = get_ip_address(ipname)
@@ -34,7 +37,8 @@ def get_empty_datadict():
     datadict['battery'] = '64' #battery level=100
     datadict['temp']= '23' #hex temp 0 -50/ 0x23 = 35/5 = 7
     datadict['reserved'] = '000000000000' #predefined fixed reserved bytes
-    datadict['bsmacfull'] = get_mac_address_full()
+    #datadict['bsmacfull'] = get_mac_address_full()
+    datadict['bsmacfull'] = get_mac_address(MacFilter,':')
     datadict['bcaddr'] = '01:00:00:00:00:00' #predefined null bcaddr for json
     print('datadict built %s' % datadict )
     return datadict

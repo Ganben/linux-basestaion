@@ -60,7 +60,11 @@ Picamera 模块（Pi Ubuntu Mate 16.04已预装）
 ```shell
 #python-pip if neccesssary↓
 sudo apt-get install python-pip libglib2.0-dev
-sudo pip install bluepy
+$ sudo apt-get install git build-essential libglib2.0-dev
+$ git clone https://github.com/IanHarvey/bluepy.git
+$ cd bluepy
+$ python setup.py build
+$ python setup.py install
 ```
 安装mqtt client和paho-mqtt
 ```shell

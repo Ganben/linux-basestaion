@@ -1,6 +1,7 @@
 [station]
 alias = pinky
 version = 1.0
+mac_filter = en
 
 [queue]
 position_l = 10000
@@ -8,11 +9,13 @@ cmd_l = 100
 call_l = 100
 
 [MQTT]
-server = 192.168.43.150
+#server = 10-8-47-94.local.
+server = 192.168.1.135
 port = 1883
 position_t = position
 cmd_t = ap
 common_t = common
+outbody_t = position
 call_t = nursecall
 heartbeat_t = apstate
 
@@ -49,4 +52,5 @@ hottime = 1.0
 upload_host = 10.8.47.29
 upload_port = 9090
 tmp_dir = jpeg
+
 

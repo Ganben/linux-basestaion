@@ -4,12 +4,28 @@
 
 import uuid, fcntl, struct
 import random
-import socket,fcntl
+import socket,fcntl,psutil
 import hashlib,urllib,struct
 import os,sys,time,commands
 import tarfile
 import picamera
 import requests
+import logging
+#from var import MacFilter
+
+#console_func = logging.StreamHandle()
+#console_func.setLevel(logging.DEBUG)
+#formatter_func = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s'
+#console.setFormatter(formatter_func)
+#logging.getLogger('demo.func').addHandler(console_func)
+#
+#Rthandler = RotatingFileHandle('myapp.log',maxBytes=10*1024*1024,backupCount=5)
+#Rthandler.setLevel(logging.INFO)
+#formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+#Rthandler.setFormatter(formatter)
+#logging.getLogger('').addHandler(Rthandler)
+logger_func = logging.getLogger('demo.func')
+	
 
 def get_ip_address(ifname):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -21,18 +37,32 @@ def get_ip_address(ifname):
         struct.pack('256s', ifname[:15])
     )[20:24])
     except Exception,e:
-	print Exception,e
+	#print Exception,e
+	print "\033[0;32;40m get_ip_address %s:%s %s\033[0m" % (ifname,Exception,e)
         res = '127.0.0.1'
     return res
 
 
-def get_mac_address(*args): 
-    mac=uuid.UUID(int = uuid.getnode()).hex[-12:] 
+#def get_mac_address(*args): 
+#    mac=uuid.UUID(int = uuid.getnode()).hex[-12:] 
+#    if len(args)>0:
+#	deli = args[0]
+#    else:
+#	deli = ''
+#    return deli.join([mac[e:e+2] for e in range(0,11,2)])
+
+def get_mac_address(st,*args):
+    a = os.popen('ifconfig | awk "/^' + st + '/{print \$5}"')
+    b = a.readline().rstrip()
     if len(args)>0:
 	deli = args[0]
-    else:
-	deli = ''
-    return deli.join([mac[e:e+2] for e in range(0,11,2)])
+	return b.replace(':',deli)
+    return b.replace(':','')
+
+def get_ifname(st):
+    a = os.popen('ifconfig | awk "/^' + st + '/{print \$1}"')
+    return a.readline().rstrip()
+    
 
 def checksum(b):
     sum = 0
@@ -61,7 +91,7 @@ def restart_raspi():
 def md5sum(fname):
     """ 计算文件的MD5值
     """
-   def read_chunks(fh):
+    def read_chunks(fh):
         fh.seek(0)
         chunk = fh.read(8096)
         while chunk:
@@ -94,6 +124,7 @@ def download(filename,md5_sum,ip,port,ran):
 		urllib.urlretrieve(url,filename)
 		print "\033[0;32;40m download suc\033[0m "
 	except Exception,e:
+		#print "\033[0;32;40m runcmd  \033[0m"
 		print "\033[0;32;40m download ERROR %s:%s\033[0m" % (Exception,e)
 		client.publish('ap','download error %s,%s' % (Exception,e))
 		return {'status':'Error','Info':"cannot download file %s:%s,%s" % (filename,Exception,e)}
@@ -114,13 +145,15 @@ def extract(tar_path, target_path):
             tar.extract(file_name, target_path)
         tar.close()
     except Exception, e:
+	print "\033[0;32;40m extract Exception:%s %s\033[0m" % (Exception,e)
         raise Exception, e
 
 def deploy(filename):
 	try:
 		extract(filename,cur_file_dir())		
 	except Exception,e:
-		pass
+		print "\033[0;32;40m deploy Exception:%s %s\033[0m" % (Exception,e)
+		#pass
 	return {'status':'OK'}
 
 def parseArgs2Dict(cmd_line):
@@ -172,6 +205,18 @@ def send_photo(filename,filedir,ip,port,bsid,bcid,now):
 	if res.status_code == 200 :
 		os.remove('%s/%s/%s' % (cur_file_dir(),filedir,filename))
 		return True
+def send_photo_url(filename,filedir,url,now):
+	pic = open('%s/%s/%s' % (cur_file_dir(),filedir,filename))
+	url_path ="%s%s" % (url,now)
+	print "\033[1;31;40mURL:%s\033[0m" % (url_path,)
+	res = requests.post(url = url_path,
+                    data=pic,
+		    headers={'Content-Type': 'image/jpeg'})
+	print "\033[1;31;40m%s \033[0m " % (res,)
+	print "\033[1;31;40m%s \033[0m " % (res.status_code,)
+	if res.status_code == 200 :
+		os.remove('%s/%s/%s' % (cur_file_dir(),filedir,filename))
+		return True
 def get_cpu_temp():
 	tempFile = open( "/sys/class/thermal/thermal_zone0/temp" )
 	cpu_temp = tempFile.read()
@@ -186,6 +231,7 @@ def has_camera():
         try:
                 c = picamera.PiCamera()
         except Exception,e:
+		print "\033[0;32;40m has_camera Exception:%s %s\033[0m" % (Exception,e)
                 return False
         else:
 		c.close()
@@ -238,8 +284,9 @@ def get_system_info():
 
         #stationID,scriptversion,mqtt listening
 
-        heartbeatInfo['ip'] = get_ip_address('wlan0')
-        heartbeatInfo['mac'] = get_mac_address(':')
+        #heartbeatInfo['ip'] = get_ip_address('wlan0')
+        #heartbeatInfo['mac'] = get_mac_address(':')
+	#heartbeatInfo['mac'] = get_mac_address(MacFilter,':')
         temp = {}
         heartbeatInfo['temp'] = temp
         temp['cpu'] = str(get_cpu_temp())
@@ -263,7 +310,23 @@ def get_system_info():
         DiskInfo['DiskTotal'] = "%s%s" % (str(DISK_total),'B')
         DiskInfo['DiskUsed'] = "%s%s" % (str(DISK_used),'B')
         DiskInfo['DiskUsedPerc'] =  str(DISK_perc)
-        heartbeatInfo['os_uptime'] = "%s min" % (str(osUptime()),)
+        #heartbeatInfo['os_uptime'] = "%s min" % (str(osUptime()),)
+        heartbeatInfo['os_uptime'] = "%s min" % (str(psutil.cpu_percent(interval=1)),)
 
         #print json.dumps(heartbeatInfo,indent=4)
         return heartbeatInfo
+
+
+def write_conf(node,key,value):
+	try:
+		fh = open('t.cnf','w')
+		conf.set(node,key,value)
+		conf.write(fh)
+	except:
+		#log sth
+		return False
+	else:
+		return True
+	finally:
+		fh.close()
+		
