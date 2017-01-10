@@ -205,6 +205,8 @@ def send_photo(filename,filedir,ip,port,bsid,bcid,now):
 	if res.status_code == 200 :
 		os.remove('%s/%s/%s' % (cur_file_dir(),filedir,filename))
 		return True
+	else:
+		return False
 def send_photo_url(filename,filedir,url,now):
 	pic = open('%s/%s/%s' % (cur_file_dir(),filedir,filename))
 	url_path ="%s%s" % (url,now)
@@ -217,6 +219,8 @@ def send_photo_url(filename,filedir,url,now):
 	if res.status_code == 200 :
 		os.remove('%s/%s/%s' % (cur_file_dir(),filedir,filename))
 		return True
+	else:
+		return False
 def get_cpu_temp():
 	tempFile = open( "/sys/class/thermal/thermal_zone0/temp" )
 	cpu_temp = tempFile.read()

@@ -1,7 +1,7 @@
 [station]
 alias = pinky
 version = 1.0
-mac_filter = en
+mac_filter = wl 
 
 [queue]
 position_l = 10000

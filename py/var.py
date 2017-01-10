@@ -52,7 +52,6 @@ if conf.has_option('camera','resolution_v'):
 	picResolutionV = int(conf.get('camera','resolution_v'))
 else:
 	picResolutionH = 1200
-print "H:%s, %s ; V:%s, %s" % (picResolutionH,type(picResolutionH),picResolutionV,type(picResolutionV))
 picUploadServer = conf.get('camera','upload_host')
 picUploadPort = conf.get('camera','upload_port')
 picUploadDir = conf.get('camera','tmp_dir')
