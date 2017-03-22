@@ -6,6 +6,7 @@ from protobuilder import outputbuilder
 from func import *
 from var import *
 from depconfig import *
+import json
 #for json type data use : inbetween
 #::predefined values::
 BCTYPE00 = 'b00' 
@@ -23,13 +24,13 @@ def get_empty_datadict():
     #datadict={keyflag, bsmac, hexip, bcmac, rssi, battery, temp, reserve}
     datadict={}
     datadict['keyflag'] = KEY_HEARTBEAT
-    #datadict['bsmac'] = get_mac_address()
+    #datadict['bsmac'] = get_mac_address()#here introduce new mac method, fix issue#15
     datadict['bsmac'] = get_mac_address(MacFilter)
     #ipname = '%s%s' % (depIfip, get_mac_address())
     ipname = '%s%s' % (depIfip, get_mac_address(MacFilter))
-    datadict['ip'] = get_ip_address(ipname)
-    
+    #this part use exactly ifname to get ip, exception returns 127.0.0.1
     local_ip = get_ip_address(ipname)
+    datadict['ip'] = local_ip #get_ip_address(ipname)
     datadict['hexip'] = ''.join([hex(int(i)).lstrip('0x').rjust(2,'0') for i in local_ip.split('.')])
     datadict['bcmac'] = '010000000000'  #null bc mac;
     datadict['rssi'] = '63' #-99 predefined
@@ -42,6 +43,14 @@ def get_empty_datadict():
     datadict['bcaddr'] = '01:00:00:00:00:00' #predefined null bcaddr for json
     print('datadict built %s' % datadict )
     return datadict
+
+def getMAC(interface):
+    try:
+        str = open('/sys/class/net/' + interface + '/address').read()
+    except:
+        str = '00:00:00:00:00:00'
+    dd = ''.join(str.split(':'))
+    return dd[0:12]
 
 def get_mac_address_full():
     mac=uuid.UUID(int = uuid.getnode()).hex[-12:]
@@ -93,6 +102,8 @@ def rawdata_translate(manufdata):
             flagdict['key'] = KEY_LOST
         elif keyflag == '70':
             flagdict['key'] = KEY_BINDING
+        else:
+            flagdict['key'] = KEY_HEARTBEAT
         #the alarm update count in later 
     elif bctype == BCTYPE01:
         statflag = manufdata[6:8]
@@ -126,8 +137,8 @@ def gen_bin_data(datadict):
 
 def gen_json_data(datadict):
     #this generate same json data type 4 two bc adv version
-    ssdata = outputbuilder(datadict['keyflag'], datadict['bsmacfull'], datadict['bcaddr'], 100, datadict['ip'], datadict['srssi'])
-
+    #ssdata = outputbuilder(datadict['keyflag'], datadict['bsmacfull'], datadict['bcaddr'], 100, datadict['ip'], datadict['srssi'])
+    ssdata = json.dumps(datadict)
     return ssdata
 
 def manu_filter(manudatabin):
@@ -141,6 +152,8 @@ def manu_filter(manudatabin):
     #if matches, return bcmanu = b00/b01
     elif manudatabin.startswith('01ff12'):
         return BCTYPE01
+    elif manudatabin.startswith('ff09ff0012'):
+        return BCTYPE00
     else:
         return False #if not matches supported bc adv packet
 

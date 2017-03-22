@@ -75,3 +75,10 @@ sudo pip install paho-mqtt #--trusted-host http://pypi.douban.com/
 ```shell
 sudo pip install zeroconf
 ```
+### OS config
+
+- sudo NOPASSWORD配置便于sudo脚本
+- 系统eth0命名的修改地址：
+```sudo vi /lib/udev/rules.d/73-usb-net-by-mac.rules
+NAME="$env{ID_NET_MAC} -> NAME="eth0"```
+- 

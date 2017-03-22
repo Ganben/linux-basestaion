@@ -4,7 +4,7 @@
 
 import uuid, fcntl, struct
 import random
-import socket,fcntl,psutil
+import socket,fcntl #,psutil
 import hashlib,urllib,struct
 import os,sys,time,commands
 import tarfile
@@ -311,7 +311,7 @@ def get_system_info():
         DiskInfo['DiskUsed'] = "%s%s" % (str(DISK_used),'B')
         DiskInfo['DiskUsedPerc'] =  str(DISK_perc)
         #heartbeatInfo['os_uptime'] = "%s min" % (str(osUptime()),)
-        heartbeatInfo['os_uptime'] = "%s min" % (str(psutil.cpu_percent(interval=1)),)
+        #heartbeatInfo['os_uptime'] = "%s min" % (str(psutil.cpu_percent(interval=1)),)
 
         #print json.dumps(heartbeatInfo,indent=4)
         return heartbeatInfo

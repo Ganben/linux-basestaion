@@ -142,8 +142,9 @@ class ScanDelegate(DefaultDelegate):
                     #dataddd['hexip'] = ''.join([hex(int(i)).lstrip('0x').rjust(2,'0') for i in local_ip.split('.')])
                     dataddd['bcaddr'] = dev.addr
                     dataddd['bcmac'] = dev.addr.replace(':','')
-                    dataddd['rssi'] = hex(dev.rssi*(-1)).lstrip('0x').rjust(2,'0')
+                    dataddd['rssi'] = hex(100+dev.rssi).lstrip('0x').rjust(2,'0')
                     dataddd['srssi'] = dev.rssi*(-1)
+		    dataddd['Manufacturer'] = data['Manufacturer']
                     ## data type 
                     if depProt == 'B':
                     #print('%s' % dataddd)
@@ -152,13 +153,15 @@ class ScanDelegate(DefaultDelegate):
                     else:
                         load = gen_json_data(dataddd)
                     ## send type
-                    #if depNet == 'S':
-                    try:
-                        s.send(load)
-                        print('all xxx sent %s' % load)
-                    except socket.error as msg:
-                        print('socket error %s' % msg)
-                        reconnect()
+                    if depNet == 'S':
+                        try:
+                            s.send(load)
+                            print('all xxx sent %s' % load)
+                        except socket.error as msg:
+                            print('socket error %s' % msg)
+                            reconnect()
+		    else:
+			client.publish(POSITIONTITLE, load)
                     ##Mqtt not processed
 
                 ## below is old codes
